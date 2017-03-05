@@ -1,4 +1,5 @@
 use peripherals::*;
+use chip8::ops::*;
 
 use std::thread;
 use std::time::Duration;

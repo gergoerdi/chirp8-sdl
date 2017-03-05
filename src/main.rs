@@ -5,8 +5,12 @@ extern crate sdl2;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::surface::{Surface,SurfaceRef};
 
 extern crate crossbeam;
+
+mod chip8;
+use chip8::prelude::*;
 
 mod peripherals;
 use peripherals::*;
@@ -70,6 +74,12 @@ impl SDLVirt {
             _ => {}
         }
     }
+
+    // fn blit(&self, draw_surface: &SurfaceRef, dest: &mut SurfaceRef) {
+    //     let ref framebuf = self.framebuf.lock().unwrap();
+    //     draw_lcd(framebuf, dest);
+    //     draw_surface.blit_scaled(None, dest, None).unwrap();
+    // }
 }
 
 impl Peripherals for SDLVirt {
