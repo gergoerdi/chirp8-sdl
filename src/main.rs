@@ -1,6 +1,7 @@
 use std::mem::transmute;
 use std::thread;
 use std::sync::{Arc,Mutex};
+use std::sync::atomic::{Ordering,AtomicBool};
 use std::time::Duration;
 
 extern crate sdl2;
@@ -19,88 +20,70 @@ const SCALE : u32 = 4;
 
 type FrameBuf = [[bool; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize];
 
-struct LCD<'a> {
-    framebuf : FrameBuf,
-    surface : Surface<'a>,
-}
-
 const COLOR_ON       : Color = Color::RGB(0x00, 0x00, 0x00);
 const COLOR_ON_GRID  : Color = Color::RGB(0x20, 0x38, 0x20);
 const COLOR_OFF      : Color = Color::RGB(0x73, 0xbd, 0x71);
 const COLOR_OFF_GRID : Color = Color::RGB(0x63, 0xad, 0x61);
 
-impl<'a> LCD<'a> {
-    fn new(pixel_format: PixelFormat) -> LCD<'a> {
-        let framebuf : FrameBuf = [[false; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize];
-        let surface = Surface::new(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, PixelFormatEnum::from(pixel_format)).unwrap();
+fn draw_lcd(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
+    let pixel_format = surface.pixel_format();
+
+    surface.with_lock_mut(|flat| {
+        let pixbuf: &mut [u32] = unsafe{ transmute(flat) };
         
-        LCD{ framebuf: framebuf, surface: surface }
-    }
-
-    fn set_pixel(&mut self, x: u8, y: u8, value: bool) {
-        self.framebuf[y as usize][x as usize] = value;
-    }
-
-    fn draw(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
-        let pixel_format = surface.pixel_format();
-
-        surface.with_lock_mut(|flat| {
-            let pixbuf: &mut [u32] = unsafe{ transmute(flat) };
-            
-            for (y, rowi) in framebuf.iter().enumerate() {
-                for (x, pxi) in rowi.iter().enumerate() {
-                    for i in 0..SCALE {
-                        for j in 0..SCALE {
-                            let grid_y = i == 0 || i == SCALE - 1;
-                            let grid_x = j == 0 || j == SCALE - 1;
-
-                            pixbuf[(((y as u32 * SCALE + i) * SCREEN_WIDTH * SCALE) + (x as u32 * SCALE + j)) as usize] =
-                                if grid_x || grid_y {              
-                                    if *pxi {COLOR_ON_GRID} else {COLOR_OFF_GRID}
-                                } else {
-                                    if *pxi {COLOR_ON} else {COLOR_OFF}
-                                }.to_u32(&pixel_format);
-                        }
+        for (y, rowi) in framebuf.iter().enumerate() {
+            for (x, pxi) in rowi.iter().enumerate() {
+                for i in 0..SCALE {
+                    for j in 0..SCALE {
+                        let grid_y = i == 0 || i == SCALE - 1;
+                        let grid_x = j == 0 || j == SCALE - 1;
+                        
+                        pixbuf[(((y as u32 * SCALE + i) * SCREEN_WIDTH * SCALE) + (x as u32 * SCALE + j)) as usize] =
+                            if grid_x || grid_y {              
+                                if *pxi {COLOR_ON_GRID} else {COLOR_OFF_GRID}
+                            } else {
+                                if *pxi {COLOR_ON} else {COLOR_OFF}
+                            }.to_u32(&pixel_format);
                     }
                 }
             }
-        });
-    }
+        }
+    });
 }
 
-// fn runEngine(lcd: &mut LCD) {
-//     let mut framebuf = &mut lcd.framebuf;
+trait Peripherals {
+    fn keep_running(&self) -> bool;
+    fn set_pixel(&self, u8, u8, bool) -> ();
+}
 
-//     thread::spawn(|| {
-//         let mut x = 0;
-        
-//         loop {
-//             framebuf[0][x] = false;
-//             x = x + 1;
-//             if x == SCREEN_WIDTH as usize { x = 0 };
-//             framebuf[0][x] = true;
-            
-//             thread::sleep(Duration::from_millis(500));
-//         };
-//     });
+struct SDLVirt {
+    framebuf: Arc<Mutex<FrameBuf>>,
+    run_flag: Arc<AtomicBool>,
+}
 
-//     // crossbeam::scope(|scope| {
-//     //     // let mut framebuf = Arc::new(framebuf);
-        
-//     //     scope.spawn(|| {
-//     //         let mut x = 0;
+impl Peripherals for SDLVirt {
+    fn keep_running(&self) -> bool {
+        self.run_flag.load(Ordering::Relaxed)
+    }
 
-//     //         loop {
-//     //             framebuf[0][x] = false;
-//     //             x = x + 1;
-//     //             if x == SCREEN_WIDTH as usize { x = 0 };
-//     //             framebuf[0][x] = true;
-                
-//     //             thread::sleep(Duration::from_millis(500));
-//     //         };
-//     //     });
-//     // });
-// }
+    fn set_pixel(&self, x: u8, y: u8, v: bool) {
+        self.framebuf.lock().unwrap()[y as usize][x as usize] = v;
+    }       
+}
+
+fn run_engine<P>(peripherals: P)
+    where P: Peripherals
+{
+    let mut x = 0;
+    
+    while peripherals.keep_running() {
+        peripherals.set_pixel(x, 0, false);
+        x = x + 1;
+        if x == SCREEN_WIDTH as u8 { x = 0 };
+        peripherals.set_pixel(x, 0, true);
+        thread::sleep(Duration::from_millis(500));
+    };
+}
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -116,26 +99,17 @@ fn main() {
     let mut events = sdl.event_pump().unwrap();
 
     let pixel_format = window.surface(&events).unwrap().pixel_format();
-
     
-    let mut lcd = LCD::new(pixel_format);
-    let framebuf = Arc::new(Mutex::new(&mut lcd.framebuf));
-    let ref mut draw_surface = &mut lcd.surface;
+    let framebuf = Arc::new(Mutex::new([[false; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize]));
+    let ref mut draw_surface = Surface::new(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, PixelFormatEnum::from(pixel_format)).unwrap();
        
-    crossbeam::scope(|scope| {    
+    let run_flag = Arc::new(AtomicBool::new(true));
+
+    let peripherals = SDLVirt{ run_flag: run_flag.clone(), framebuf: framebuf.clone() };
+    
+    crossbeam::scope(|scope| {
         let thr = scope.spawn(|| {
-            let mut x = 0;
-            
-            for i in 0..1000 {
-                {
-                    let mut framebuf = framebuf.lock().unwrap();
-                    framebuf[0][x] = false;
-                    x = x + 1;
-                    if x == SCREEN_WIDTH as usize { x = 0 };
-                    framebuf[0][x] = true;
-                }
-                thread::sleep(Duration::from_millis(500));
-            };
+            run_engine(peripherals);
         });
         
         'main: loop {
@@ -163,13 +137,14 @@ fn main() {
             {
                 let mut screen_surface = window.surface_mut(&events).unwrap();
                 let framebuf = framebuf.lock().unwrap();
-                LCD::draw(&framebuf, draw_surface);
+                draw_lcd(&framebuf, draw_surface);
                 draw_surface.blit_scaled(None, &mut screen_surface, None).unwrap();
             };
             window.update_surface().unwrap();
             timer.delay(17); // 60 FPS
         }
 
+        run_flag.store(false, Ordering::Relaxed);
         thr.join();
     });
 }
