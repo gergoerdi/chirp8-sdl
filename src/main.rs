@@ -153,7 +153,7 @@ fn main() {
     };
 
     crossbeam::scope(|scope| {
-        let thr = scope.spawn(|| {
+        scope.spawn(|| {
             engine::run(virt.clone());
         });
 
@@ -195,6 +195,5 @@ fn main() {
         }
 
         virt.run_flag.store(false, Ordering::Relaxed);
-        thr.join();
     });
 }
