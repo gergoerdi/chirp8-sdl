@@ -21,16 +21,16 @@ pub fn draw_lcd(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
 
     surface.with_lock_mut(|flat| {
         let pixbuf: &mut [u32] = unsafe{ transmute(flat) };
-        
+
         for (y, rowi) in framebuf.iter().enumerate() {
             for (x, pxi) in rowi.iter().enumerate() {
                 for i in 0..SCALE {
                     for j in 0..SCALE {
                         let grid_y = i == 0 || i == SCALE - 1;
                         let grid_x = j == 0 || j == SCALE - 1;
-                        
+
                         pixbuf[(((y as u32 * SCALE + i) * SCREEN_WIDTH as u32 * SCALE) + (x as u32 * SCALE + j)) as usize] =
-                            if grid_x || grid_y {              
+                            if grid_x || grid_y {
                                 if *pxi {COLOR_ON_GRID} else {COLOR_OFF_GRID}
                             } else {
                                 if *pxi {COLOR_ON} else {COLOR_OFF}

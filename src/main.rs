@@ -17,13 +17,16 @@ mod lcd;
 use lcd::*;
 
 type KeyBuf = [[bool; 4]; 4];
+type RAM = [Byte; 1 << 12];
 
 #[derive(Clone)]
 struct SDLVirt {
     framebuf: Arc<Mutex<FrameBuf>>,
+    redraw: Arc<AtomicBool>,
     run_flag: Arc<AtomicBool>,
     key_state: Arc<Mutex<KeyBuf>>,
-    timer : Arc<Mutex<u8>>,
+    timer: Arc<Mutex<u8>>,
+    ram: Arc<Mutex<RAM>>,
 }
 
 impl SDLVirt {
@@ -108,6 +111,22 @@ impl Peripherals for SDLVirt {
     fn get_timer(&self) -> u8 {
         *self.timer.lock().unwrap()
     }
+
+    fn redraw(&self) {
+        self.redraw.store(true, Ordering::Relaxed);
+    }
+
+    fn read_ram(&self, addr: Addr) -> Byte {
+        self.ram.lock().unwrap()[addr as usize]
+    }
+
+    fn write_ram(&self, addr: Addr, b: Byte) {
+        self.ram.lock().unwrap()[addr as usize] = b;
+    }
+
+    fn get_random(&self) -> Byte {
+        return 42; // TODO
+    }
 }
 
 fn main() {
@@ -127,8 +146,10 @@ fn main() {
     let virt = SDLVirt{
         run_flag: Arc::new(AtomicBool::new(true)),
         framebuf: Arc::new(Mutex::new([[false; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize])),
+        redraw: Arc::new(AtomicBool::new(true)),
         key_state: Arc::new(Mutex::new([[false; 4]; 4])),
         timer: Arc::new(Mutex::new(0)),
+        ram: Arc::new(Mutex::new([0; 1 << 12])),
     };
 
     crossbeam::scope(|scope| {
@@ -157,8 +178,11 @@ fn main() {
                 }
             };
 
-            {
+            if virt.redraw.swap(false, Ordering::Relaxed) {
                 let mut screen_surface = window.surface_mut(&events).unwrap();
+
+                // virt.blit(&draw_surface, &mut screen_surface);
+
                 let ref framebuf = virt.framebuf.lock().unwrap();
                 draw_lcd(framebuf, draw_surface);
                 draw_surface.blit_scaled(None, &mut screen_surface, None).unwrap();

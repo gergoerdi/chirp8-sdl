@@ -23,6 +23,8 @@ pub fn run<P>(peripherals: P)
             }
         }
 
+        peripherals.redraw();
+
         thread::sleep(Duration::from_millis(50));
     };
 }
