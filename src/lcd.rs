@@ -7,7 +7,7 @@ use std::mem::transmute;
 
 use peripherals::*;
 
-const SCALE : u32 = 4;
+const SCALE : u32 = 8;
 
 pub type FrameBuf = [[bool; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize];
 
