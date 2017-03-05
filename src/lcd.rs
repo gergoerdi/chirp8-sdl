@@ -1,0 +1,51 @@
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use sdl2::pixels::{Color,PixelFormat,PixelFormatEnum};
+use sdl2::surface::{Surface,SurfaceRef};
+
+use std::mem::transmute;
+
+use peripherals::*;
+
+const SCALE : u32 = 4;
+
+pub type FrameBuf = [[bool; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize];
+
+const COLOR_ON       : Color = Color::RGB(0x00, 0x00, 0x00);
+const COLOR_ON_GRID  : Color = Color::RGB(0x20, 0x38, 0x20);
+const COLOR_OFF      : Color = Color::RGB(0x73, 0xbd, 0x71);
+const COLOR_OFF_GRID : Color = Color::RGB(0x63, 0xad, 0x61);
+
+pub fn draw_lcd(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
+    let pixel_format = surface.pixel_format();
+
+    surface.with_lock_mut(|flat| {
+        let pixbuf: &mut [u32] = unsafe{ transmute(flat) };
+        
+        for (y, rowi) in framebuf.iter().enumerate() {
+            for (x, pxi) in rowi.iter().enumerate() {
+                for i in 0..SCALE {
+                    for j in 0..SCALE {
+                        let grid_y = i == 0 || i == SCALE - 1;
+                        let grid_x = j == 0 || j == SCALE - 1;
+                        
+                        pixbuf[(((y as u32 * SCALE + i) * SCREEN_WIDTH as u32 * SCALE) + (x as u32 * SCALE + j)) as usize] =
+                            if grid_x || grid_y {              
+                                if *pxi {COLOR_ON_GRID} else {COLOR_OFF_GRID}
+                            } else {
+                                if *pxi {COLOR_ON} else {COLOR_OFF}
+                            }.to_u32(&pixel_format);
+                    }
+                }
+            }
+        }
+    });
+}
+
+pub fn new_draw_surface<'a> (pixel_format: PixelFormat) -> Surface<'a> {
+    Surface::new(
+        SCREEN_WIDTH as u32 * SCALE,
+        SCREEN_HEIGHT as u32 * SCALE,
+        PixelFormatEnum::from(pixel_format))
+        .unwrap()
+}
