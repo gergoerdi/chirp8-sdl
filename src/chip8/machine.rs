@@ -138,10 +138,10 @@ impl Machine {
         let hi = io.read_ram(self.pc); self.pc += 1;
         let lo = io.read_ram(self.pc); self.pc += 1;
 
-        match decode(hi, lo) {
-            None => println!("0x{:04x} 0x{:02x} 0x{:02x}", self.pc-2, hi, lo),
-            Some(op) => println!("0x{:04x} {:?}", self.pc-2, op)
-        }
+        // match decode(hi, lo) {
+        //     None => println!("0x{:04x} 0x{:02x} 0x{:02x}", self.pc-2, hi, lo),
+        //     Some(op) => println!("0x{:04x} {:?}", self.pc-2, op)
+        // }
 
         match decode(hi, lo).unwrap() {
             Op::Sys(addr) => {
