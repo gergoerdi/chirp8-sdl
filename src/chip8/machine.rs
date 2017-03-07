@@ -35,16 +35,16 @@ impl Machine {
             Arith::And => (x & y, None),
             Arith::XOr => (x ^ y, None),
             Arith::Add => {
-                let z = x + y;
-                (z, Some(z < x))
+                let (z, f) = u8::overflowing_add(x, y);
+                (z, Some(f))
             },
             Arith::Sub => {
-                let z = x - y;
-                (z, Some(z > y))
+                let (z, f) = u8::overflowing_sub(x, y);
+                (z, Some(f))
             },
             Arith::SubFlip => {
-                let z = y - x;
-                (z, Some(z > y))
+                let (z, f) = u8::overflowing_sub(y, x);
+                (z, Some(f))
             },
             Arith::ShiftL => (x << 1, Some(x & 0x80 != 0)),
             Arith::ShiftR => (x >> 1, Some(x & 0x01 != 0))
@@ -174,7 +174,7 @@ impl Machine {
                 self.regs[vx as usize] = imm
             },
             Op::AddImm(vx, imm) => {
-                self.regs[vx as usize] += imm
+                self.regs[vx as usize] = u8::wrapping_add(self.regs[vx as usize], imm)
             },
             Op::Arith(op, vx, vy) => {
                 let x = self.regs[vx as usize];
