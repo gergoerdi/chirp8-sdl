@@ -114,7 +114,7 @@ impl Machine {
             *state = io.scan_key_row(row as Byte)
         }
 
-        loop {
+        while io.keep_running() {
             for (row, mut old_state) in init_states.iter_mut().enumerate() {
                 let new_state = io.scan_key_row(row as Byte);
                 let mut fresh_keys = new_state & !*old_state;
@@ -131,7 +131,9 @@ impl Machine {
 
                 *old_state &= new_state;
             }
-        }
+        };
+
+        (0, 0)
     }
 
     pub fn step<P>(&mut self, io: &P) where P: Peripherals {
