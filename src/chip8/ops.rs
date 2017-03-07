@@ -1,5 +1,6 @@
 pub use chip8::prelude::*;
 
+#[derive(Debug)]
 struct RawOp {
     op : Nybble,
     x : Nybble,
@@ -9,6 +10,7 @@ struct RawOp {
     nn : Byte,
 }
 
+#[derive(Debug)]
 pub enum Cmp {
     Eq,
     NEq
@@ -16,15 +18,18 @@ pub enum Cmp {
 
 type Reg = Nybble;
 
+#[derive(Debug)]
 pub enum Arg {
     Reg(Reg),
     Imm(Byte)
 }
 
+#[derive(Debug)]
 pub enum Arith {
     Load, Or, And, XOr, Add, Sub, ShiftR, ShiftL, SubFlip
 }
 
+#[derive(Debug)]
 pub enum Op {
     ClearScr,
     Ret,
@@ -51,7 +56,7 @@ pub enum Op {
     Restore(Reg)
 }
 
-fn raw_op (hi: Byte, lo: Byte) -> RawOp {
+fn raw_op(hi: Byte, lo: Byte) -> RawOp {
     let x = hi & 0x0f;
 
     RawOp{
@@ -59,15 +64,16 @@ fn raw_op (hi: Byte, lo: Byte) -> RawOp {
         x : x,
         y : lo >> 4,
         n : lo & 0x0f,
-        addr : (x as Addr) << 8 + lo as Addr,
+        addr : ((x as Addr) << 8) + lo as Addr,
         nn : lo
     }
 }
 
-fn decode_raw (raw: RawOp) -> Option<Op> {
+fn decode_raw(raw: RawOp) -> Option<Op> {
     match raw.op {
         0x0 if raw.nn == 0xe0 => Some(Op::ClearScr),
         0x0 if raw.nn == 0xee => Some(Op::Ret),
+        0x0 => Some(Op::Sys(raw.addr)),
         0x1 => Some(Op::Jump(raw.addr)),
         0x2 => Some(Op::Call(raw.addr)),
         0x3 => Some(Op::Skip(Cmp::Eq, raw.x, Arg::Imm(raw.nn))),
@@ -112,4 +118,8 @@ fn decode_raw (raw: RawOp) -> Option<Op> {
         },
         _ => None
     }
+}
+
+pub fn decode(hi: Byte, lo: Byte) -> Option<Op> {
+    decode_raw(raw_op(hi, lo))
 }

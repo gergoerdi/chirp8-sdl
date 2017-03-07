@@ -96,15 +96,15 @@ impl Peripherals for SDLVirt {
         }
     }
 
-    fn set_pixel(&self, x: u8, y: u8, v: bool) {
+    fn set_pixel(&self, x: Byte, y: Byte, v: bool) {
         self.framebuf.lock().unwrap()[y as usize][x as usize] = v;
     }
 
-    fn get_pixel(&self, x: u8, y: u8) -> bool {
+    fn get_pixel(&self, x: Byte, y: Byte) -> bool {
         self.framebuf.lock().unwrap()[y as usize][x as usize]
     }
 
-    fn scan_key_row(&self, row: u8) -> u8 {
+    fn scan_key_row(&self, row: Byte) -> Byte {
         let row = self.key_state.lock().unwrap()[row as usize];
 
         let mut mask = 0;
@@ -114,11 +114,11 @@ impl Peripherals for SDLVirt {
         mask
     }
 
-    fn set_timer(&self, v: u8) {
+    fn set_timer(&self, v: Byte) {
         *self.timer.lock().unwrap() = v
     }
 
-    fn get_timer(&self) -> u8 {
+    fn get_timer(&self) -> Byte {
         *self.timer.lock().unwrap()
     }
 
@@ -136,6 +136,10 @@ impl Peripherals for SDLVirt {
 
     fn get_random(&self) -> Byte {
         return 42; // TODO
+    }
+
+    fn set_sound(&self, value: Byte) {
+        // TODO
     }
 }
 

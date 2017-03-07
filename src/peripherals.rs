@@ -15,6 +15,7 @@ pub trait Peripherals {
 
     fn set_timer(&self, Byte);
     fn get_timer(&self) -> Byte;
+    fn set_sound(&self, Byte);
 
     fn read_ram(&self, Addr) -> Byte;
     fn write_ram(&self, Addr, Byte);
