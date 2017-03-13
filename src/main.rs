@@ -9,14 +9,11 @@ use sdl2::surface::{Surface,SurfaceRef};
 
 extern crate crossbeam;
 
-mod chip8;
+extern crate chip8_engine as chip8;
 use chip8::prelude::*;
-
-mod peripherals;
-use peripherals::*;
+use chip8::peripherals::*;
 
 mod engine;
-
 mod lcd;
 use lcd::*;
 

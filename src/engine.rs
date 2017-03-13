@@ -1,4 +1,4 @@
-use peripherals::*;
+use chip8::peripherals::*;
 use chip8::machine::Machine;
 use chip8::prelude::*;
 

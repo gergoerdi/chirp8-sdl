@@ -5,7 +5,7 @@ use sdl2::surface::{Surface,SurfaceRef};
 
 use std::mem::transmute;
 
-use peripherals::*;
+use chip8::peripherals::*;
 
 const SCALE : u32 = 8;
 

@@ -6,3 +6,4 @@ authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 [dependencies]
 sdl2 = "0.29.0"
 crossbeam = "0.2.10"
+chip8-engine = { path = "../chip8-engine" }
