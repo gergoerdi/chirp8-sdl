@@ -134,7 +134,7 @@ impl Peripherals for SDLVirt {
         return 42; // TODO
     }
 
-    fn set_sound(&self, value: Byte) {
+    fn set_sound(&self, _value: Byte) {
         // TODO
     }
 }

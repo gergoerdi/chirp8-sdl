@@ -2,9 +2,6 @@ use chip8::peripherals::*;
 use chip8::machine::Machine;
 use chip8::prelude::*;
 
-use std::thread;
-use std::time::Duration;
-
 use std::fs::File;
 use std::io::Read;
 
@@ -34,7 +31,7 @@ pub fn run<P>(io: P)
         io.write_ram(addr as Addr, *b);
     }
 
-    let mut file = File::open("hidden.ch8").unwrap();
+    let mut file = File::open("hello.ch8").unwrap();
     let mut buf = [0; 4 * 2 << 10];
     let mut ptr = 0x0200;
     'load: loop {
