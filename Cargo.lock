@@ -2,7 +2,7 @@
 name = "chip8-sdl"
 version = "0.1.0"
 dependencies = [
- "chip8-engine 0.1.0",
+ "chip8-engine 0.1.0 (git+https://github.com/gergoerdi/rust-avr-chip8-engine)",
  "crossbeam 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "sdl2 0.29.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -15,6 +15,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "chip8-engine"
 version = "0.1.0"
+source = "git+https://github.com/gergoerdi/rust-avr-chip8-engine#5017070d977f869404317dab4d7bf517b2de6549"
 
 [[package]]
 name = "crossbeam"
@@ -94,6 +95,7 @@ dependencies = [
 
 [metadata]
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
+"checksum chip8-engine 0.1.0 (git+https://github.com/gergoerdi/rust-avr-chip8-engine)" = "<none>"
 "checksum crossbeam 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)" = "0c5ea215664ca264da8a9d9c3be80d2eaf30923c259d03e870388eb927508f97"
 "checksum lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6abe0ee2e758cd6bc8a2cd56726359007748fbf4128da998b65d0b70f881e19b"
 "checksum libc 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)" = "88ee81885f9f04bff991e306fea7c1c60a5f0f9e409e99f6b40e3311a3363135"
