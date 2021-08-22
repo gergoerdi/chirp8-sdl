@@ -1,9 +1,9 @@
 [package]
 name = "chip8-sdl"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 
 [dependencies]
 sdl2 = "0.29.0"
 crossbeam = "0.2.10"
-chip8-engine = { git = "https://github.com/gergoerdi/rust-avr-chip8-engine", branch = "master" }
+chip8-engine = { path="rust-avr-chip8-engine" }
