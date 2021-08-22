@@ -7,7 +7,10 @@ use chip8::peripherals::*;
 
 const SCALE : u32 = 8;
 
-pub type FrameBuf = [[bool; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize];
+pub const LCD_WIDTH : u8 = SCREEN_WIDTH + 20;
+pub const LCD_HEIGHT : u8 = SCREEN_HEIGHT + 16;
+
+pub type FrameBuf = [[bool; LCD_WIDTH as usize]; LCD_HEIGHT as usize];
 
 const COLOR_ON       : Color = Color::RGB(0x00, 0x00, 0x00);
 const COLOR_ON_GRID  : Color = Color::RGB(0x20, 0x38, 0x20);
@@ -27,7 +30,7 @@ pub fn draw_lcd(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
                         let grid_y = i == 0 || i == SCALE - 1;
                         let grid_x = j == 0 || j == SCALE - 1;
 
-                        pixbuf[(((y as u32 * SCALE + i) * SCREEN_WIDTH as u32 * SCALE) + (x as u32 * SCALE + j)) as usize] =
+                        pixbuf[(((y as u32 * SCALE + i) * LCD_WIDTH as u32 * SCALE) + (x as u32 * SCALE + j)) as usize] =
                             if grid_x || grid_y {
                                 if *pxi {COLOR_ON_GRID} else {COLOR_OFF_GRID}
                             } else {
@@ -42,8 +45,8 @@ pub fn draw_lcd(framebuf: &FrameBuf, surface: &mut SurfaceRef) {
 
 pub fn new_draw_surface<'a> (pixel_format: PixelFormat) -> Surface<'a> {
     Surface::new(
-        SCREEN_WIDTH as u32 * SCALE,
-        SCREEN_HEIGHT as u32 * SCALE,
+        LCD_WIDTH as u32 * SCALE,
+        LCD_HEIGHT as u32 * SCALE,
         PixelFormatEnum::from(pixel_format))
         .unwrap()
 }

@@ -93,11 +93,11 @@ impl Peripherals for SDLVirt {
     }
 
     fn set_pixel(&self, x: Byte, y: Byte, v: bool) {
-        self.framebuf.lock().unwrap()[y as usize][x as usize] = v;
+        self.framebuf.lock().unwrap()[(y + 8) as usize][(x + 10) as usize] = v;
     }
 
     fn get_pixel(&self, x: Byte, y: Byte) -> bool {
-        self.framebuf.lock().unwrap()[y as usize][x as usize]
+        self.framebuf.lock().unwrap()[(y + 8) as usize][(x + 10) as usize]
     }
 
     fn scan_key_row(&self, row: Byte) -> Byte {
@@ -146,7 +146,7 @@ fn main() {
     let mut sdltimer = sdl.timer().unwrap();
 
     let vidsys = sdl.video().unwrap();
-    let mut window = vidsys.window("RUST-8", SCREEN_WIDTH as u32 * 8, SCREEN_HEIGHT as u32 * 8)
+    let mut window = vidsys.window("RUST-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
         // .position_centered()
         .build()
         .unwrap();
@@ -155,7 +155,7 @@ fn main() {
 
     let virt = SDLVirt{
         run_flag: Arc::new(AtomicBool::new(true)),
-        framebuf: Arc::new(Mutex::new([[false; SCREEN_WIDTH as usize]; SCREEN_HEIGHT as usize])),
+        framebuf: Arc::new(Mutex::new([[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize])),
         redraw: Arc::new(AtomicBool::new(true)),
         key_state: Arc::new(Mutex::new([[false; 4]; 4])),
         timer: Arc::new(Mutex::new(0)),
