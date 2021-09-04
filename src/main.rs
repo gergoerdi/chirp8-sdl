@@ -83,21 +83,23 @@ impl Peripherals for SDLVirt {
         self.run_flag.load(Ordering::Relaxed)
     }
 
-    fn clear_pixels(&self) {
-        let mut framebuf = self.framebuf.lock().unwrap();
-        for row in framebuf.iter_mut() {
-            for x in row.iter_mut() {
-                *x = false;
-            }
+    fn set_pixel_row(&self, y: ScreenY, mut row: ScreenRow) {
+        let frame_row = &mut self.framebuf.lock().unwrap()[(y + 8) as usize];
+        for x in 0..64 {
+            let v = row & 1 != 0;
+            row >>= 1;
+            frame_row[(63-x + 10) as usize] = v;
         }
     }
 
-    fn set_pixel(&self, x: Byte, y: Byte, v: bool) {
-        self.framebuf.lock().unwrap()[(y + 8) as usize][(x + 10) as usize] = v;
-    }
-
-    fn get_pixel(&self, x: Byte, y: Byte) -> bool {
-        self.framebuf.lock().unwrap()[(y + 8) as usize][(x + 10) as usize]
+    fn get_pixel_row(&self, y: ScreenY) -> ScreenRow {
+        let frame_row = self.framebuf.lock().unwrap()[(y + 8) as usize];
+        let mut row = 0;
+        for x in 0..64 {
+            row <<= 1;
+            row |= frame_row[(x + 10) as usize] as u64;
+        }
+        row
     }
 
     fn scan_key_row(&self, row: Byte) -> Byte {
@@ -110,8 +112,8 @@ impl Peripherals for SDLVirt {
         mask
     }
 
-    fn set_timer(&self, v: Byte) {
-        *self.timer.lock().unwrap() = v
+    fn set_timer(&self, val: Byte) {
+        *self.timer.lock().unwrap() = val
     }
 
     fn get_timer(&self) -> Byte {
@@ -126,15 +128,15 @@ impl Peripherals for SDLVirt {
         self.ram.lock().unwrap()[addr as usize]
     }
 
-    fn write_ram(&self, addr: Addr, b: Byte) {
-        self.ram.lock().unwrap()[addr as usize] = b;
+    fn write_ram(&self, addr: Addr, val: Byte) {
+        self.ram.lock().unwrap()[addr as usize] = val;
     }
 
     fn get_random(&self) -> Byte {
         return 42; // TODO
     }
 
-    fn set_sound(&self, _value: Byte) {
+    fn set_sound(&self, _val: Byte) {
         // TODO
     }
 }
