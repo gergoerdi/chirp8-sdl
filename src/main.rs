@@ -8,9 +8,9 @@ use sdl2::keyboard::Keycode;
 
 extern crate crossbeam;
 
-extern crate chip8_engine as chip8;
-use chip8::prelude::*;
-use chip8::peripherals::*;
+extern crate chirp8_engine as chirp8;
+use chirp8::prelude::*;
+use chirp8::peripherals::*;
 
 mod engine;
 mod lcd;
@@ -83,7 +83,7 @@ impl Peripherals for SDLVirt {
         self.run_flag.load(Ordering::Relaxed)
     }
 
-    fn set_pixel_row(&self, y: ScreenY, mut row: ScreenRow) {
+    fn set_pixel_row(&mut self, y: ScreenY, mut row: ScreenRow) {
         let frame_row = &mut self.framebuf.lock().unwrap()[(y + 8) as usize];
         for x in 0..64 {
             let v = row & 1 != 0;
@@ -112,7 +112,7 @@ impl Peripherals for SDLVirt {
         mask
     }
 
-    fn set_timer(&self, val: Byte) {
+    fn set_timer(&mut self, val: Byte) {
         *self.timer.lock().unwrap() = val
     }
 
@@ -120,7 +120,7 @@ impl Peripherals for SDLVirt {
         *self.timer.lock().unwrap()
     }
 
-    fn redraw(&self) {
+    fn redraw(&mut self) {
         self.redraw.store(true, Ordering::Relaxed);
     }
 
@@ -128,15 +128,15 @@ impl Peripherals for SDLVirt {
         self.ram.lock().unwrap()[addr as usize]
     }
 
-    fn write_ram(&self, addr: Addr, val: Byte) {
+    fn write_ram(&mut self, addr: Addr, val: Byte) {
         self.ram.lock().unwrap()[addr as usize] = val;
     }
 
-    fn get_random(&self) -> Byte {
+    fn get_random(&mut self) -> Byte {
         return 42; // TODO
     }
 
-    fn set_sound(&self, _val: Byte) {
+    fn set_sound(&mut self, _val: Byte) {
         // TODO
     }
 }
@@ -148,7 +148,7 @@ fn main() {
     let mut sdltimer = sdl.timer().unwrap();
 
     let vidsys = sdl.video().unwrap();
-    let mut window = vidsys.window("RUST-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
+    let mut window = vidsys.window("CHIRP-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
         // .position_centered()
         .build()
         .unwrap();

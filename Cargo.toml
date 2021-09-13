@@ -1,9 +1,9 @@
 [package]
-name = "chip8-sdl"
+name = "chirp8-sdl"
 version = "0.2.0"
 authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 
 [dependencies]
 sdl2 = "0.29.0"
 crossbeam = "0.2.10"
-chip8-engine = { path="chip8-engine" }
+chirp8-engine = { path="chirp8-engine" }

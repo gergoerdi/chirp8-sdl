@@ -1,11 +1,11 @@
-use chip8::peripherals::*;
-use chip8::machine::Machine;
-use chip8::prelude::*;
+use chirp8::peripherals::*;
+use chirp8::machine::Machine;
+use chirp8::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-pub fn run<P>(io: P)
+pub fn run<P>(mut io: P)
     where P: Peripherals
 {
     let font_rom = [
@@ -50,6 +50,6 @@ pub fn run<P>(io: P)
     let mut machine = Machine::new();
 
     while io.keep_running() {
-        machine.step(&io);
+        machine.step(&mut io);
     }
 }
