@@ -11,7 +11,7 @@ use chirp8::peripherals::*;
 
 use lcd::*;
 
-type KeyBuf = [[bool; 4]; 4];
+type KeyBuf = u16;
 type RAM = [Byte; 1 << 12];
 
 #[derive(Clone)]
@@ -33,34 +33,36 @@ impl SDLVirt {
     }
 
     pub fn process_key(&self, keycode: Keycode, state: bool) {
-        let pos = match keycode {
+        let key = match keycode {
 
-            Keycode::Num1 => Some((0, 0)),
-            Keycode::Num2 => Some((0, 1)),
-            Keycode::Num3 => Some((0, 2)),
-            Keycode::Num4 => Some((0, 3)),
+            Keycode::Num1 => Some(0x1),
+            Keycode::Num2 => Some(0x2),
+            Keycode::Num3 => Some(0x3),
+            Keycode::Num4 => Some(0xc),
 
-            Keycode::Q => Some((1, 0)),
-            Keycode::W => Some((1, 1)),
-            Keycode::E => Some((1, 2)),
-            Keycode::R => Some((1, 3)),
+            Keycode::Q => Some(0x4),
+            Keycode::W => Some(0x5),
+            Keycode::E => Some(0x6),
+            Keycode::R => Some(0xd),
 
-            Keycode::A => Some((2, 0)),
-            Keycode::S => Some((2, 1)),
-            Keycode::D => Some((2, 2)),
-            Keycode::F => Some((2, 3)),
+            Keycode::A => Some(0x7),
+            Keycode::S => Some(0x8),
+            Keycode::D => Some(0x9),
+            Keycode::F => Some(0xe),
 
-            Keycode::Z => Some((3, 0)),
-            Keycode::X => Some((3, 1)),
-            Keycode::C => Some((3, 2)),
-            Keycode::V => Some((3, 3)),
+            Keycode::Z => Some(0xa),
+            Keycode::X => Some(0x0),
+            Keycode::C => Some(0xb),
+            Keycode::V => Some(0xf),
 
             _ => None,
         };
 
-        match pos {
-            Some((r, c)) => {
-                self.key_state.lock().unwrap()[r][c] = state;
+        match key {
+            Some(key) => {
+                let mask = 1 << key;
+                let mut keys = self.key_state.lock().unwrap();
+                if state { *keys |= mask } else { *keys &= !mask }
             },
             _ => {}
         }
@@ -77,7 +79,7 @@ impl SDLVirt {
             run_flag: Arc::new(AtomicBool::new(true)),
             framebuf: Arc::new(Mutex::new([[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize])),
             redraw: Arc::new(AtomicBool::new(true)),
-            key_state: Arc::new(Mutex::new([[false; 4]; 4])),
+            key_state: Arc::new(Mutex::new(0)),
             timer: Arc::new(Mutex::new(0)),
             ram: Arc::new(Mutex::new([0; 1 << 12])),
         }
@@ -121,17 +123,7 @@ impl Peripherals for SDLVirt {
     }
 
     fn get_keys(&self) -> u16 {
-        let rows = *self.key_state.lock().unwrap();
-        let mut mask = 0;
-
-        for row in rows {
-            for key in row {
-                mask <<= 1;
-                if key { mask = mask | 1 };
-            }
-        }
-
-        mask
+        *self.key_state.lock().unwrap()
     }
 
     fn set_timer(&mut self, val: Byte) {
