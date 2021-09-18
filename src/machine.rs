@@ -120,13 +120,17 @@ impl Peripherals for SDLVirt {
         row
     }
 
-    fn scan_key_row(&self, row: Byte) -> Byte {
-        let row = self.key_state.lock().unwrap()[row as usize];
-
+    fn get_keys(&self) -> u16 {
+        let rows = *self.key_state.lock().unwrap();
         let mut mask = 0;
-        for (i, b) in row.iter().enumerate() {
-            if *b { mask = mask | 1 << i }
+
+        for row in rows {
+            for key in row {
+                mask <<= 1;
+                if key { mask = mask | 1 };
+            }
         }
+
         mask
     }
 
