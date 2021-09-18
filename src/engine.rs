@@ -1,5 +1,5 @@
 use chirp8::peripherals::*;
-use chirp8::machine::Machine;
+use chirp8::cpu::CPU;
 use chirp8::prelude::*;
 
 use std::fs::File;
@@ -47,9 +47,9 @@ pub fn run<P>(mut io: P)
         ptr += read_bytes as Addr;
     }
 
-    let mut machine = Machine::new();
+    let mut cpu = CPU::new();
 
     while io.keep_running() {
-        machine.step(&mut io);
+        cpu.step(&mut io);
     }
 }
