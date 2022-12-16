@@ -39,22 +39,12 @@ fn main() {
             for event in events.poll_iter() {
                 match event {
                     Event::Quit {..} => break 'main,
-
-                    Event::KeyDown {keycode: Some(keycode), ..} => {
-                        if keycode == Keycode::Escape {
-                            break 'main
-                        } else {
-                            virt.process_key(keycode, true);
-                        }
-                    }
-
-                    Event::KeyUp { keycode: Some(keycode), ..} => {
-                        virt.process_key(keycode, false);
-                    }
-
+                    Event::KeyDown {keycode: Some(keycode), ..} if keycode == Keycode::Escape => break 'main,
                     _ => {}
                 }
             };
+
+            virt.process_keys(events.keyboard_state());
 
             if virt.take_redraw() {
                 let mut screen_surface = window.surface_mut(&events).unwrap();

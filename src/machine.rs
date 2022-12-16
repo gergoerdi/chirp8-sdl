@@ -3,7 +3,7 @@ use std::sync::atomic::{Ordering,AtomicBool};
 
 extern crate sdl2;
 
-use sdl2::keyboard::Keycode;
+use sdl2::keyboard::{KeyboardState, Scancode};
 
 extern crate chirp8_engine as chirp8;
 use chirp8::prelude::*;
@@ -32,39 +32,19 @@ impl SDLVirt {
         }
     }
 
-    pub fn process_key(&self, keycode: Keycode, state: bool) {
-        let key = match keycode {
+    pub fn process_keys(&self, key_state: KeyboardState) {
+        let mut keys = self.key_state.lock().unwrap();
+        *keys = 0;
+        for (i, key) in [ Scancode::X,
+                          Scancode::Num1, Scancode::Num2, Scancode::Num3,
+                          Scancode::Q, Scancode::W, Scancode::E,
+                          Scancode::A, Scancode::S, Scancode::D,
 
-            Keycode::Num1 => Some(0x1),
-            Keycode::Num2 => Some(0x2),
-            Keycode::Num3 => Some(0x3),
-            Keycode::Num4 => Some(0xc),
-
-            Keycode::Q => Some(0x4),
-            Keycode::W => Some(0x5),
-            Keycode::E => Some(0x6),
-            Keycode::R => Some(0xd),
-
-            Keycode::A => Some(0x7),
-            Keycode::S => Some(0x8),
-            Keycode::D => Some(0x9),
-            Keycode::F => Some(0xe),
-
-            Keycode::Z => Some(0xa),
-            Keycode::X => Some(0x0),
-            Keycode::C => Some(0xb),
-            Keycode::V => Some(0xf),
-
-            _ => None,
-        };
-
-        match key {
-            Some(key) => {
-                let mask = 1 << key;
-                let mut keys = self.key_state.lock().unwrap();
-                if state { *keys |= mask } else { *keys &= !mask }
-            },
-            _ => {}
+                          Scancode::Z, Scancode::C, Scancode::Num4, Scancode::R, Scancode::F, Scancode::V
+                        ].iter().enumerate() {
+            if key_state.is_scancode_pressed(*key) {
+                *keys |= 1 << i;
+            }
         }
     }
 
