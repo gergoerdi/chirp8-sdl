@@ -3,7 +3,7 @@ use sdl2::surface::{Surface,SurfaceRef};
 
 use std::mem::transmute;
 
-use chirp8::peripherals::*;
+use chirp8::prelude::*;
 
 const SCALE : u32 = 8;
 
