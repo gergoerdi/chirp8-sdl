@@ -39,7 +39,18 @@ fn main() {
             for event in events.poll_iter() {
                 match event {
                     Event::Quit {..} => break 'main,
-                    Event::KeyDown {keycode: Some(keycode), ..} if keycode == Keycode::Escape => break 'main,
+                    Event::KeyDown {keycode: Some(keycode), ..} => match keycode {
+                        Keycode::Escape => break 'main,
+                        Keycode::Backspace => {
+                            let ref framebuf = virt.lock_framebuf().unwrap();
+                            for row in framebuf.iter() {
+                                for bit in row.iter() {
+                                    print!("{}", if *bit { '*' } else { ' ' });
+                                }
+                                println!();
+                            }
+                        },
+                        _ => {} },
                     _ => {}
                 }
             };
