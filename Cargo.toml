@@ -4,6 +4,6 @@ version = "0.2.0"
 authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 
 [dependencies]
-sdl2 = "0.29.0"
+sdl2 = { version = "0.35.2", default-features = false, features = ["gfx"] }
 crossbeam = "0.2.10"
 chirp8-engine = { path="chirp8-engine" }

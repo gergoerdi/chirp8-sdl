@@ -1,5 +1,8 @@
 extern crate sdl2;
 
+use sdl2::video::*;
+use sdl2::render::*;
+use sdl2::pixels::*;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
@@ -21,12 +24,13 @@ fn main() {
     let mut sdltimer = sdl.timer().unwrap();
 
     let vidsys = sdl.video().unwrap();
-    let mut window = vidsys.window("CHIRP-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
+    let window = vidsys.window("CHIRP-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
         // .position_centered()
         .build()
         .unwrap();
-
-    let ref mut draw_surface = lcd::new_draw_surface(window.surface(&events).unwrap().pixel_format());
+    let mut canvas: Canvas<Window> = window.into_canvas()
+        .build()
+        .unwrap();
 
     let virt = SDLVirt::new();
 
@@ -58,15 +62,9 @@ fn main() {
             virt.process_keys(events.keyboard_state());
 
             if virt.take_redraw() {
-                let mut screen_surface = window.surface_mut(&events).unwrap();
-
-                // virt.blit(&draw_surface, &mut screen_surface);
-
                 let ref framebuf = virt.lock_framebuf().unwrap();
-                draw_lcd(framebuf, draw_surface);
-                draw_surface.blit_scaled(None, &mut screen_surface, None).unwrap();
+                draw_lcd(framebuf, &mut canvas);
             };
-            window.update_surface().unwrap();
 
             virt.tick();
 
