@@ -2,13 +2,13 @@ extern crate sdl2;
 
 use sdl2::video::*;
 use sdl2::render::*;
-use sdl2::pixels::*;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 extern crate crossbeam;
 
 extern crate chirp8_engine as chirp8;
+extern crate clap;
 
 mod engine;
 mod machine;
@@ -17,7 +17,20 @@ mod lcd;
 use machine::*;
 use lcd::*;
 
+use clap::Parser;
+
+/// CHIRP-8 SDL frontend
+#[derive(Parser)]
+struct CliOpts {
+    /// The .ch8 program to run
+    #[arg(value_name = "FILE", default_value="hidden.ch8")]
+    path: std::path::PathBuf,
+}
+
 fn main() {
+    let args = CliOpts::parse();
+    let file_name: std::path::PathBuf = args.path;
+
     let sdl = sdl2::init().unwrap();
     let mut events = sdl.event_pump().unwrap();
 
@@ -36,7 +49,7 @@ fn main() {
 
     crossbeam::scope(|scope| {
         scope.spawn(|| {
-            engine::run(virt.clone());
+            engine::run(&file_name, virt.clone());
         });
 
         'main: loop {

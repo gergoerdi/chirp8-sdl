@@ -5,7 +5,7 @@ use chirp8::prelude::*;
 use std::fs::File;
 use std::io::Read;
 
-pub fn run<P>(mut io: P)
+pub fn run<P>(file_name: &std::path::PathBuf, mut io: P)
     where P: Peripherals
 {
     let font_rom = [
@@ -31,7 +31,7 @@ pub fn run<P>(mut io: P)
         io.write_ram(addr as Addr, *b);
     }
 
-    let mut file = File::open("hidden.ch8").unwrap();
+    let mut file = File::open(file_name).unwrap();
     let mut buf = [0; 4 * 2 << 10];
     let mut ptr = 0x0200;
     'load: loop {
