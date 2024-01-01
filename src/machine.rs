@@ -8,6 +8,7 @@ use sdl2::keyboard::{KeyboardState, Scancode};
 extern crate chirp8_engine as chirp8;
 use chirp8::prelude::*;
 use chirp8::peripherals::*;
+use chirp8::cpu::CPU;
 
 use lcd::*;
 
@@ -20,16 +21,12 @@ pub struct SDLVirt {
     redraw: Arc<AtomicBool>,
     run_flag: Arc<AtomicBool>,
     key_state: Arc<Mutex<KeyBuf>>,
-    timer: Arc<Mutex<u8>>,
     ram: Arc<Mutex<RAM>>,
 }
 
 impl SDLVirt {
-    pub fn tick(&self) {
-        let mut timer = self.timer.lock().unwrap();
-        if *timer > 0 {
-            *timer = *timer - 1
-        }
+    pub fn tick(&self, cpu: &mut CPU) {
+        cpu.tick_frame()
     }
 
     pub fn process_keys(&self, key_state: KeyboardState) {
@@ -60,9 +57,12 @@ impl SDLVirt {
             framebuf: Arc::new(Mutex::new([[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize])),
             redraw: Arc::new(AtomicBool::new(true)),
             key_state: Arc::new(Mutex::new(0)),
-            timer: Arc::new(Mutex::new(0)),
             ram: Arc::new(Mutex::new([0; 1 << 12])),
         }
+    }
+
+    pub fn keep_running(&self) -> bool {
+        self.run_flag.load(Ordering::Relaxed)
     }
 
     pub fn stop_running(&self) {
@@ -79,10 +79,6 @@ impl SDLVirt {
 }
 
 impl Peripherals for SDLVirt {
-    fn keep_running(&self) -> bool {
-        self.run_flag.load(Ordering::Relaxed)
-    }
-
     fn set_pixel_row(&mut self, y: ScreenY, mut row: ScreenRow) {
         let frame_row = &mut self.framebuf.lock().unwrap()[(y + 8) as usize];
         for x in 0..64 {
@@ -104,14 +100,6 @@ impl Peripherals for SDLVirt {
 
     fn get_keys(&self) -> u16 {
         *self.key_state.lock().unwrap()
-    }
-
-    fn set_timer(&mut self, val: Byte) {
-        *self.timer.lock().unwrap() = val
-    }
-
-    fn get_timer(&self) -> Byte {
-        *self.timer.lock().unwrap()
     }
 
     fn redraw(&mut self) {

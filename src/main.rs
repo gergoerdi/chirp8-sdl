@@ -16,6 +16,9 @@ mod lcd;
 
 use machine::*;
 use lcd::*;
+use chirp8::cpu::CPU;
+
+use std::sync::Mutex;
 
 use clap::Parser;
 
@@ -45,11 +48,16 @@ fn main() {
         .build()
         .unwrap();
 
+    let cpu = Mutex::new(CPU::new());
     let virt = SDLVirt::new();
 
     crossbeam::scope(|scope| {
         scope.spawn(|| {
-            engine::run(&file_name, virt.clone());
+            let mut io = virt.clone();
+            engine::setup(&file_name, &mut io);
+            while io.keep_running() {
+                cpu.lock().unwrap().step(&mut io);
+            }
         });
 
         'main: loop {
@@ -79,7 +87,7 @@ fn main() {
                 draw_lcd(framebuf, &mut canvas);
             };
 
-            virt.tick();
+            virt.tick(&mut cpu.lock().unwrap());
 
             sdltimer.delay(17); // 60 FPS
         }

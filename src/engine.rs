@@ -1,11 +1,10 @@
 use chirp8::peripherals::*;
-use chirp8::cpu::CPU;
 use chirp8::prelude::*;
 
 use std::fs::File;
 use std::io::Read;
 
-pub fn run<P>(file_name: &std::path::PathBuf, mut io: P)
+pub fn setup<P>(file_name: &std::path::PathBuf, io: &mut P)
     where P: Peripherals
 {
     let font_rom = [
@@ -45,11 +44,5 @@ pub fn run<P>(file_name: &std::path::PathBuf, mut io: P)
             io.write_ram(ptr + offset as Addr, buf[offset]);
         }
         ptr += read_bytes as Addr;
-    }
-
-    let mut cpu = CPU::new();
-
-    while io.keep_running() {
-        cpu.step(&mut io);
     }
 }
