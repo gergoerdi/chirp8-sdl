@@ -126,10 +126,6 @@ impl Peripherals for SDLVirt {
         self.ram.lock().unwrap()[addr as usize] = val;
     }
 
-    fn get_random(&mut self) -> Byte {
-        return 42; // TODO
-    }
-
     fn set_sound(&mut self, _val: Byte) {
         // TODO
     }
