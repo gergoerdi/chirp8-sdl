@@ -52,7 +52,7 @@ fn main() {
     let virt = SDLVirt::new();
 
     crossbeam::scope(|scope| {
-        scope.spawn(|| {
+        scope.spawn(|_| {
             let mut io = virt.clone();
             engine::setup(&file_name, &mut io);
             while io.keep_running() {
@@ -93,5 +93,5 @@ fn main() {
         }
 
         virt.stop_running();
-    });
+    }).unwrap();
 }

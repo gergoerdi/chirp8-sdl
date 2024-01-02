@@ -5,6 +5,6 @@ authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 
 [dependencies]
 sdl2 = { version = "0.35.2", default-features = false, features = ["gfx"] }
-crossbeam = "0.2.12"
+crossbeam = "0.8.3"
 chirp8-engine = { path="chirp8-engine" }
 clap = { version = "4.4.11", features = ["derive"] }
