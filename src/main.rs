@@ -19,6 +19,8 @@ use chirp8::cpu::{CPU, DefaultQuirks};
 
 use clap::Parser;
 
+const VIDEO_WAIT: bool = true;
+
 /// CHIRP-8 SDL frontend
 #[derive(Parser)]
 struct CliOpts {
@@ -72,8 +74,15 @@ fn main() {
 
         virt.process_keys(events.keyboard_state());
 
+        let mut wait_frame = false;
         while !fixedstep.update() {
-            cpu.step(&mut virt)
+            if !wait_frame {
+                if VIDEO_WAIT && virt.check_redraw() {
+                    wait_frame = true;
+                } else {
+                    cpu.step(&mut virt)
+                }
+            }
         }
         let _delta = fixedstep.render_delta();
 

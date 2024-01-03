@@ -17,6 +17,7 @@ pub struct SDLVirt {
     framebuf: FrameBuf,
     key_buf: KeyBuf,
     ram: RAM,
+    redraw: bool,
 }
 
 impl SDLVirt {
@@ -44,11 +45,18 @@ impl SDLVirt {
             framebuf: [[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize],
             key_buf: 0,
             ram: [0; 1 << 12],
+            redraw: false,
         }
     }
 
     pub fn get_framebuf(&self) -> FrameBuf {
         self.framebuf
+    }
+
+    pub fn check_redraw(&mut self) -> bool {
+        let b = self.redraw;
+        self.redraw = false;
+        b
     }
 }
 
@@ -60,6 +68,8 @@ impl Peripherals for SDLVirt {
             row >>= 1;
             frame_row[(63-x + 10) as usize] = v;
         }
+
+        self.redraw = true;
     }
 
     fn get_pixel_row(&self, y: ScreenY) -> ScreenRow {
@@ -74,9 +84,6 @@ impl Peripherals for SDLVirt {
 
     fn get_keys(&self) -> u16 {
         self.key_buf
-    }
-
-    fn redraw(&mut self) {
     }
 
     fn read_ram(&self, addr: Addr) -> Byte {
