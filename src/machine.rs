@@ -5,7 +5,7 @@ use sdl2::keyboard::{KeyboardState, Scancode};
 extern crate chirp8_engine as chirp8;
 use chirp8::prelude::*;
 use chirp8::peripherals::*;
-use chirp8::cpu::CPU;
+use chirp8::cpu::{CPU, Quirks};
 
 use lcd::*;
 
@@ -20,7 +20,7 @@ pub struct SDLVirt {
 }
 
 impl SDLVirt {
-    pub fn tick(&self, cpu: &mut CPU) {
+    pub fn tick<Q: Quirks>(&self, cpu: &mut CPU<Q>) {
         cpu.tick_frame()
     }
 

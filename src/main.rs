@@ -15,7 +15,7 @@ mod lcd;
 
 use machine::*;
 use lcd::*;
-use chirp8::cpu::CPU;
+use chirp8::cpu::{CPU, DefaultQuirks};
 
 use clap::Parser;
 
@@ -43,7 +43,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::<DefaultQuirks>::new();
     let mut virt = SDLVirt::new();
 
     engine::setup(&file_name, &mut virt);
