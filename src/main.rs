@@ -57,7 +57,7 @@ fn main() {
                 Event::KeyDown {keycode: Some(keycode), ..} => match keycode {
                     Keycode::Escape => break 'main,
                     Keycode::Backspace => {
-                        let ref framebuf = virt.lock_framebuf();
+                        let ref framebuf = virt.get_framebuf();
                         for row in framebuf.iter() {
                             for bit in row.iter() {
                                 print!("{}", if *bit { '*' } else { ' ' });
@@ -77,11 +77,7 @@ fn main() {
         }
         let _delta = fixedstep.render_delta();
 
-        if virt.take_redraw() {
-            let ref framebuf = virt.lock_framebuf();
-            draw_lcd(framebuf, &mut canvas);
-        };
-
+        draw_lcd(&virt.get_framebuf(), &mut canvas);
         virt.tick(&mut cpu);
     }
 }

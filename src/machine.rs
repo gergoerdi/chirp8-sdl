@@ -15,7 +15,6 @@ type RAM = [Byte; 1 << 12];
 #[derive(Clone)]
 pub struct SDLVirt {
     framebuf: FrameBuf,
-    redraw: bool,
     key_buf: KeyBuf,
     ram: RAM,
 }
@@ -43,19 +42,12 @@ impl SDLVirt {
     pub fn new() -> SDLVirt {
         SDLVirt {
             framebuf: [[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize],
-            redraw: true,
             key_buf: 0,
             ram: [0; 1 << 12],
         }
     }
 
-    pub fn take_redraw(&mut self) -> bool {
-        let result = self.redraw;
-        self.redraw = false;
-        result
-    }
-
-    pub fn lock_framebuf(&self) -> FrameBuf {
+    pub fn get_framebuf(&self) -> FrameBuf {
         self.framebuf
     }
 }
@@ -85,7 +77,6 @@ impl Peripherals for SDLVirt {
     }
 
     fn redraw(&mut self) {
-        self.redraw = true
     }
 
     fn read_ram(&self, addr: Addr) -> Byte {
