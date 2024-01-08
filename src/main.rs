@@ -17,7 +17,6 @@ use machine::*;
 use lcd::*;
 use chirp8::quirks::*;
 use chirp8::cpu::CPU;
-use chirp8::peripherals::Peripherals;
 
 use clap::Parser;
 use clap::ArgAction;
@@ -72,7 +71,7 @@ fn main() {
     let mut virt = SDLVirt::new();
 
     engine::setup(&file_name, &mut virt);
-    virt.write_ram(0x1ff, 1);
+    // virt.write_ram(0x1ff, 1);
 
     let mut fixedstep = fixedstep::FixedStep::start(60.0);
 
