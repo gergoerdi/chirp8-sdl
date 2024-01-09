@@ -11,10 +11,10 @@ extern crate fixedstep;
 
 mod engine;
 mod machine;
-mod lcd;
+mod video;
 
 use machine::*;
-use lcd::*;
+use video::*;
 use chirp8::quirks::*;
 use chirp8::cpu::CPU;
 
@@ -59,7 +59,7 @@ fn main() {
     let mut events = sdl.event_pump().unwrap();
 
     let vidsys = sdl.video().unwrap();
-    let window = vidsys.window("CHIRP-8", LCD_WIDTH as u32 * 8, LCD_HEIGHT as u32 * 8)
+    let window = vidsys.window("CHIRP-8", PIX_WIDTH, PIX_HEIGHT)
         // .position_centered()
         .build()
         .unwrap();
@@ -81,15 +81,15 @@ fn main() {
                 Event::Quit {..} => break 'main,
                 Event::KeyDown {keycode: Some(keycode), ..} => match keycode {
                     Keycode::Escape => break 'main,
-                    Keycode::Backspace => {
-                        let ref framebuf = virt.get_framebuf();
-                        for row in framebuf.iter() {
-                            for bit in row.iter() {
-                                print!("{}", if *bit { '#' } else { ' ' });
-                            }
-                            println!();
-                        }
-                    },
+                    // Keycode::Backspace => {
+                    //     let ref framebuf = virt.get_framebuf();
+                    //     for row in framebuf.iter() {
+                    //         for bit in row.iter() {
+                    //             print!("{}", if *bit { '#' } else { ' ' });
+                    //         }
+                    //         println!();
+                    //     }
+                    // },
                     _ => {} },
                 _ => {}
             }
@@ -102,7 +102,7 @@ fn main() {
         }
         let _delta = fixedstep.render_delta();
 
-        draw_lcd(&virt.get_framebuf(), &mut canvas);
+        render_lcd(&virt.get_framebuf(), &mut canvas);
         virt.tick(&mut cpu);
     }
 }

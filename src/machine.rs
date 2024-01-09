@@ -7,7 +7,7 @@ use chirp8::prelude::*;
 use chirp8::peripherals::*;
 use chirp8::cpu::CPU;
 
-use lcd::*;
+use chirp8::graphics::lcd::*;
 
 type KeyBuf = u16;
 type RAM = [Byte; 1 << 12];
@@ -41,7 +41,7 @@ impl SDLVirt {
 
     pub fn new() -> SDLVirt {
         SDLVirt {
-            framebuf: [[false; LCD_WIDTH as usize]; LCD_HEIGHT as usize],
+            framebuf: [0; SCREEN_HEIGHT as usize],
             key_buf: 0,
             ram: [0; 1 << 12],
         }
@@ -53,23 +53,12 @@ impl SDLVirt {
 }
 
 impl Peripherals for SDLVirt {
-    fn set_pixel_row(&mut self, y: ScreenY, mut row: ScreenRow) {
-        let frame_row = &mut self.framebuf[(y + 8) as usize];
-        for x in 0..64 {
-            let v = row & 1 != 0;
-            row >>= 1;
-            frame_row[(63-x + 10) as usize] = v;
-        }
+    fn set_pixel_row(&mut self, y: ScreenY, row: ScreenRow) {
+        self.framebuf[y as usize] = row;
     }
 
     fn get_pixel_row(&self, y: ScreenY) -> ScreenRow {
-        let frame_row = self.framebuf[(y + 8) as usize];
-        let mut row = 0;
-        for x in 0..64 {
-            row <<= 1;
-            row |= frame_row[(x + 10) as usize] as u64;
-        }
-        row
+        self.framebuf[y as usize]
     }
 
     fn get_keys(&self) -> u16 {
