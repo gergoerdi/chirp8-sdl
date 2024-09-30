@@ -1,6 +1,6 @@
 [package]
 name = "chirp8-sdl"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Dr. ERDI Gergo <gergo@erdi.hu>"]
 
 [dependencies]
